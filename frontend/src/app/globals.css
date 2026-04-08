@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+:root {
+  --bg-main: #0b0e14;
+  --bg-sidebar: #16191f;
+  --bg-card: #1c2128;
+  --border-subtle: #30363d;
+  --brand-primary: #357ae8;
+  --brand-success: #2ea043;
+  --brand-danger: #f85149;
+  --brand-warning: #d29922;
+  --text-main: #e6edf3;
+  --text-muted: #8b949e;
+}
+
+@theme {
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-success: var(--brand-success);
+  --color-brand-danger: var(--brand-danger);
+  --color-brand-warning: var(--brand-warning);
+}
+
+body {
+  @apply bg-[var(--bg-main)] text-[var(--text-main)] font-sans antialiased;
+}
+
+@layer components {
+  .console-card {
+    @apply bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-md shadow-sm;
+  }
+  
+  .console-sidebar-item {
+    @apply flex items-center gap-3 px-4 py-2 text-sm font-medium text-[var(--text-muted)] hover:text-white hover:bg-white/5 transition-colors cursor-pointer;
+  }
+  
+  .console-sidebar-item.active {
+    @apply text-white bg-[var(--brand-primary)]/10 border-l-2 border-[var(--brand-primary)];
+  }
+  
+  .console-btn-primary {
+    @apply bg-[var(--brand-primary)] hover:bg-blue-600 text-white font-medium py-1.5 px-4 rounded text-sm transition-all shadow-sm;
+  }
+  
+  .console-btn-secondary {
+    @apply bg-transparent hover:bg-white/5 text-[var(--text-main)] border border-[var(--border-subtle)] font-medium py-1.5 px-4 rounded text-sm transition-all;
+  }
+
+  .console-header {
+    @apply h-12 bg-[var(--bg-sidebar)] border-b border-[var(--border-subtle)] flex items-center px-6 gap-4 sticky top-0 z-50;
+  }
+}
+
+@layer utilities {
+  .text-muted {
+    color: var(--text-muted);
+  }
+  
+  .border-subtle {
+    border-color: var(--border-subtle);
+  }
+}

@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  governance-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: scaler-hackathon/governance-gateway:latest
+    container_name: governance-gateway-prod
+    ports:
+      - "7860:7860"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MODEL_NAME=llama-3.3-70b-versatile
+      - PORT=7860
+    volumes:
+      - audit-logs:/home/user/app/logs
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/admin/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  audit-logs:
+    driver: local
