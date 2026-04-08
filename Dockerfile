@@ -22,7 +22,7 @@ COPY --chown=user . /app
 # Create start script
 RUN echo '#!/bin/sh' > start.sh && \
     echo 'cd /app/frontend && npm install && npm run build' >> start.sh && \
-    echo 'uvicorn app:app --host 0.0.0.0 --port 8000 &' >> start.sh && \
+    echo 'export PYTHONPATH=/app && uvicorn app:app --host 0.0.0.0 --port 8000 &' >> start.sh && \
     echo 'cd /app/frontend && PORT=7860 npm start' >> start.sh && \
     chmod +x start.sh
 
