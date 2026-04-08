@@ -1,53 +1,29 @@
-# Stage 1: Build the Next.js frontend
-FROM node:20-slim AS frontend-builder
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm install
-COPY frontend/ ./
-RUN npm run build
+# Read the doc: https://huggingface.co/docs/hub/spaces-sdks-docker
+# you will also find guides on how best to write your Dockerfile
 
-# Stage 2: Final image with Python and UV for ultra-fast, reliable enterprise builds
-FROM python:3.11-slim
+FROM python:3.10
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# Install Node.js
+RUN apt-get update && apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt-get install -y nodejs
 
-# Install 'uv' for deterministic dependency resolution
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-# Use non-root user (ID 1000) for high-security environments (Rule 1)
 RUN useradd -m -u 1000 user
 USER user
-ENV HOME=/home/user \
-    PATH=/home/user/.local/bin:$PATH \
-    PYTHONUNBUFFERED=1 \
-    PORT=7860
+ENV PATH="/home/user/.local/bin:$PATH"
 
-WORKDIR $HOME/app
+WORKDIR /app
 
-# Copy lockfiles and dependency declarations
-COPY --chown=user pyproject.toml README.md openenv.yaml uv.lock ./
+COPY --chown=user ./requirements.txt requirements.txt
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-# Install python dependencies using 'uv' sync for high-reliability
-# This ensures we use the EXACT same versions used in development
-RUN uv sync --frozen
+COPY --chown=user . /app
 
-# Copy the application source code
-COPY --chown=user support_triage_env ./support_triage_env
-COPY --chown=user server ./server
-COPY --chown=user inference.py ./
+# Create start script
+RUN echo '#!/bin/sh' > start.sh && \
+    echo 'cd /app/frontend && npm install && npm run build' >> start.sh && \
+    echo 'uvicorn app:app --host 0.0.0.0 --port 8000 &' >> start.sh && \
+    echo 'cd /app/frontend && PORT=7860 npm start' >> start.sh && \
+    chmod +x start.sh
 
-# Copy the optimized Next.js build from Stage 1
-COPY --from=frontend-builder --chown=user /app/frontend/out ./frontend/out
-
-# Final production stage exposed on the enterprise standard port
-EXPOSE 7860
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD sh -c 'curl -fsS "http://127.0.0.1:7860/admin/stats" || exit 1'
-
-# Use JSON format for CMD to ensure signals (SIGTERM) are handled correctly
-CMD ["uv", "run", "uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "7860", "--proxy-headers"]
+CMD ["./start.sh"]
