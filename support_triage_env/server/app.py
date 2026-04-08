@@ -16,5 +16,20 @@ app = create_app(
     env_name="support_triage_env",
 )
 
+# Root endpoint
+@app.get("/")
+async def root():
+    return {
+        "name": "Support Triage OpenEnv",
+        "description": "An OpenEnv environment for IT support ticket triage",
+        "docs": "/docs",
+        "endpoints": {
+            "reset": "POST /reset - Initialize the environment",
+            "step": "POST /step - Execute an action",
+            "state": "GET /state - Get current state",
+            "docs": "GET /docs - Interactive API documentation"
+        }
+    }
+
 # Routes are now consolidated in server/app.py for high-reliability.
 # This file is kept as the core OpenEnv server for MCP/WS connectivity.
