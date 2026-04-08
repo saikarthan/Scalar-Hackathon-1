@@ -10,8 +10,11 @@ ENV PYTHONPATH=/app
 
 WORKDIR /app
 
-COPY --chown=user ./requirements.txt requirements.txt
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+# Install uv
+RUN pip install uv
+
+COPY --chown=user ./pyproject.toml ./uv.lock ./
+RUN uv sync --frozen --no-install-project
 
 COPY --chown=user . /app
 
