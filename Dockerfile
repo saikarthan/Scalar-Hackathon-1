@@ -13,9 +13,6 @@ WORKDIR /app
 COPY --chown=user ./requirements.txt requirements.txt
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-COPY --chown=user ./pyproject.toml ./pyproject.toml
 COPY --chown=user . /app
-
-RUN pip install --no-cache-dir -e .
 
 CMD ["uvicorn", "support_triage_env.server.app:app", "--host", "0.0.0.0", "--port", "7860"]
